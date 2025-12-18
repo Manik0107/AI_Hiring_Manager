@@ -1,0 +1,122 @@
+"""
+FastAPI application for AI Hiring Manager chatbot
+"""
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from core.chatbot import get_response, load_documents
+from api.formatter import format_response
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="AI Hiring Manager API",
+    description="Professional chatbot API with knowledge base integration",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Pydantic models for request/response
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "What is a ReLU function?",
+                "session_id": "user123"
+            }
+        }
+
+class ChatResponse(BaseModel):
+    response: str
+    formatted_response: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "response": "The ReLU function is...",
+                "formatted_response": "The ReLU function is..."
+            }
+        }
+
+class HealthResponse(BaseModel):
+    status: str
+    message: str
+
+# Startup event to load documents
+@app.on_event("startup")
+async def startup_event():
+    """Load documents into knowledge base on startup"""
+    print("Starting AI Hiring Manager API...")
+    print("Loading documents into knowledge base...")
+    load_documents()
+    print("API ready!")
+
+# Health check endpoint
+@app.get("/health", response_model=HealthResponse, tags=["Health"])
+async def health_check():
+    """
+    Health check endpoint to verify API is running
+    """
+    return HealthResponse(
+        status="healthy",
+        message="AI Hiring Manager API is running"
+    )
+
+# Chat endpoint
+@app.post("/chat", response_model=ChatResponse, tags=["Chat"])
+async def chat(request: ChatRequest):
+    """
+    Send a message to the chatbot and receive a formatted response
+    
+    - **message**: The user's question or message
+    - **session_id**: Optional session identifier for tracking conversations
+    
+    Returns a clean, professionally formatted response without emojis or special symbols.
+    """
+    if not request.message or not request.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    try:
+        # Get response from agent
+        raw_response = get_response(request.message)
+        
+        # Format the response
+        formatted = format_response(raw_response)
+        
+        return ChatResponse(
+            response=raw_response,
+            formatted_response=formatted
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing request: {str(e)}"
+        )
+
+# Root endpoint
+@app.get("/", tags=["Info"])
+async def root():
+    """
+    Root endpoint with API information
+    """
+    return {
+        "name": "AI Hiring Manager API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+        "chat": "/chat"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

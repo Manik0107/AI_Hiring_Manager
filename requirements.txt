@@ -1,0 +1,10 @@
+agno
+google-genai
+qdrant-client
+pypdf
+openai
+python-dotenv
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings

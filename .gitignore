@@ -1,0 +1,41 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore environment variables
+.env
+.env.local
+
+# Ignore vector database files (auto-generated)
+data/
+collection/
+meta.json
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore lock files
+.lock
+uv.lock
+
+# Ignore logs
+*.log
+
+# Keep documents directory structure but ignore PDFs in git
+documents/*.pdf
+!documents/.gitkeep
