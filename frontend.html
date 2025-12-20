@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI HR Interview - Speech to Speech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .stage-text {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .transcript-box {
+            background: #f7f9fc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 120px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .transcript-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .transcript-item.interviewer {
+            background: #e8eaf6;
+            border-left: 4px solid #667eea;
+        }
+
+        .transcript-item.candidate {
+            background: #fce4ec;
+            border-left: 4px solid #ec407a;
+        }
+
+        .transcript-label {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 140px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-speak {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-speak:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-end {
+            background: #f44336;
+            color: white;
+        }
+
+        .recording-indicator {
+            width: 12px;
+            height: 12px;
+            background: #f44336;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .score-display {
+            background: #fff9c4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 AI HR Interview</h1>
+        <p class="subtitle">Speech-to-Speech Interview System</p>
+
+        <div class="status-card" id="statusCard">
+            <span class="status-icon" id="statusIcon">🎤</span>
+            <div class="status-text" id="statusText">Ready to Start</div>
+            <div class="stage-text" id="stageText">Click "Start Interview" to begin</div>
+        </div>
+
+        <div class="info-box">
+            <strong>How it works:</strong><br>
+            1. Click "Start Interview" to connect<br>
+            2. The AI will introduce itself and ask questions<br>
+            3. Hold "Speak" button and answer the questions<br>
+            4. Release when done speaking<br>
+            5. Get your final score at the end!
+        </div>
+
+        <div class="transcript-box" id="transcriptBox">
+            <div style="text-align: center; color: #999;">
+                Conversation will appear here...
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" id="startBtn" onclick="startInterview()">
+                Start Interview
+            </button>
+            <button class="btn-speak" id="speakBtn" disabled onmousedown="startRecording()" onmouseup="stopRecording()"
+                ontouchstart="startRecording()" ontouchend="stopRecording()">
+                Hold to Speak
+            </button>
+            <button class="btn-end" id="endBtn" disabled onclick="endInterview()">
+                End Interview
+            </button>
+        </div>
+
+        <div class="score-display hidden" id="scoreDisplay">
+            <h3 style="margin-bottom: 15px;">📊 Final Scores</h3>
+            <div class="score-item">
+                <span>Total Score:</span>
+                <span id="totalScore">-</span>
+            </div>
+            <div class="score-item">
+                <span>Technical:</span>
+                <span id="technicalScore">-</span>
+            </div>
+            <div class="score-item">
+                <span>Behavioral:</span>
+                <span id="behavioralScore">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let websocket = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentAudio = null;
+
+        const statusCard = document.getElementById('statusCard');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusText = document.getElementById('statusText');
+        const stageText = document.getElementById('stageText');
+        const transcriptBox = document.getElementById('transcriptBox');
+        const startBtn = document.getElementById('startBtn');
+        const speakBtn = document.getElementById('speakBtn');
+        const endBtn = document.getElementById('endBtn');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+
+        function updateStatus(icon, text, stage, color = null) {
+            statusIcon.textContent = icon;
+            statusText.textContent = text;
+            stageText.textContent = stage;
+            if (color) {
+                statusCard.style.background = color;
+            } else {
+                statusCard.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+        }
+
+        function addTranscript(role, text) {
+            const item = document.createElement('div');
+            item.className = `transcript-item ${role}`;
+            item.innerHTML = `
+                <div class="transcript-label">${role}</div>
+                <div>${text}</div>
+            `;
+
+            // Clear "waiting" message if present
+            if (transcriptBox.querySelector('div[style]')) {
+                transcriptBox.innerHTML = '';
+            }
+
+            transcriptBox.appendChild(item);
+            transcriptBox.scrollTop = transcriptBox.scrollHeight;
+        }
+
+        async function startInterview() {
+            try {
+                // Connect to WebSocket
+                const wsUrl = 'ws://localhost:8000/interview/ws';
+                websocket = new WebSocket(wsUrl);
+
+                websocket.onopen = () => {
+                    console.log('WebSocket connected');
+
+                    // Send init message
+                    websocket.send(JSON.stringify({
+                        type: 'init',
+                        session_id: 'session_' + Date.now(),
+                        job_role: 'Software Engineer'
+                    }));
+
+                    updateStatus('🔄', 'Connecting...', 'Initializing interview');
+                    startBtn.disabled = true;
+                };
+
+                websocket.onmessage = async (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('Received:', data.type);
+
+                    if (data.type === 'candidate_transcript') {
+                        // Display candidate's answer immediately (FIXED ORDER)
+                        addTranscript('candidate', data.transcript);
+                    }
+                    else if (data.type === 'interviewer_response') {
+                        // Display AI's question/response
+                        addTranscript('interviewer', data.text);
+
+                        // Play audio
+                        if (data.audio) {
+                            updateStatus('🔊', 'AI Speaking...', `Stage: ${data.stage}`);
+                            await playAudio(data.audio);
+                            updateStatus('👂', 'Your Turn', 'Hold "Speak" button to answer');
+                            speakBtn.disabled = false;
+                        }
+                    }
+                    else if (data.type === 'status') {
+                        updateStatus('⏳', data.message, 'Processing...');
+                        speakBtn.disabled = true;
+                    }
+                    else if (data.type === 'interview_complete') {
+                        updateStatus('✅', 'Interview Complete!', 'Thank you for your time', '#4caf50');
+                        speakBtn.disabled = true;
+                        endBtn.disabled = true;
+
+                        // Show scores
+                        displayScores(data.summary.scores);
+                    }
+                    else if (data.type === 'error') {
+                        updateStatus('❌', 'Error', data.message, '#f44336');
+                        console.error('Error:', data.message);
+                    }
+                };
+
+                websocket.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    updateStatus('❌', 'Connection Error', 'Please check if server is running', '#f44336');
+                };
+
+                websocket.onclose = () => {
+                    console.log('WebSocket closed');
+                    if (statusText.textContent !== 'Interview Complete!') {
+                        updateStatus('🔴', 'Disconnected', 'Connection closed');
+                    }
+                    startBtn.disabled = false;
+                    speakBtn.disabled = true;
+                    endBtn.disabled = true;
+                };
+
+                endBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Error starting interview:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function startRecording() {
+            if (isRecording) return;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                    // Send audio to server
+                    if (websocket && websocket.readyState === WebSocket.OPEN) {
+                        audioBlob.arrayBuffer().then(buffer => {
+                            websocket.send(buffer);
+                        });
+                    }
+
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                updateStatus('🎤', 'Recording...', 'Speak now!', '#f44336');
+                speakBtn.innerHTML = '<span class="recording-indicator"></span>Recording...';
+
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                alert('Microphone access denied. Please allow microphone access.');
+            }
+        }
+
+        function stopRecording() {
+            if (!isRecording || !mediaRecorder) return;
+
+            mediaRecorder.stop();
+            isRecording = false;
+            speakBtn.textContent = 'Hold to Speak';
+            speakBtn.disabled = true;
+            updateStatus('⏳', 'Processing...', 'Transcribing your response...');
+        }
+
+        async function playAudio(base64Audio) {
+            return new Promise((resolve) => {
+                const audio = new Audio('data:audio/mp3;base64,' + base64Audio);
+                currentAudio = audio;
+
+                audio.onended = () => {
+                    resolve();
+                };
+
+                audio.onerror = (error) => {
+                    console.error('Audio playback error:', error);
+                    resolve();
+                };
+
+                audio.play().catch(error => {
+                    console.error('Play error:', error);
+                    resolve();
+                });
+            });
+        }
+
+        function endInterview() {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({ type: 'end_interview' }));
+            }
+        }
+
+        function displayScores(scores) {
+            document.getElementById('totalScore').textContent = scores.total_score.toFixed(1) + '/100';
+            document.getElementById('technicalScore').textContent = scores.technical_avg.toFixed(1) + '/100';
+            document.getElementById('behavioralScore').textContent = scores.behavioral_avg.toFixed(1) + '/100';
+            scoreDisplay.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

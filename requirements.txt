@@ -8,3 +8,8 @@ fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
+groq
+edge-tts
+fastapi
+uvicorn
+websockets

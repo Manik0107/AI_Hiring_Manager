@@ -39,3 +39,15 @@ uv.lock
 # Keep documents directory structure but ignore PDFs in git
 documents/*.pdf
 !documents/.gitkeep
+
+# Ignore test files (developer only)
+test_*.py
+test_*.mp3
+processor_test.mp3
+
+# Ignore developer documentation
+docs/
+QUICKSTART.md
+
+# Ignore python version file
+.python-version

@@ -12,15 +12,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.chatbot import get_response, load_documents
 from api.formatter import format_response
+from api.interview_routes import router as interview_router
 
 # Initialize FastAPI app
 app = FastAPI(
     title="AI Hiring Manager API",
-    description="Professional chatbot API with knowledge base integration",
-    version="1.0.0",
+    description="Professional chatbot API with knowledge base integration and speech-to-speech interviews",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Include interview routes
+app.include_router(interview_router)
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):

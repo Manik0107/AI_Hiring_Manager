@@ -1,34 +1,32 @@
 """
 AI Hiring Manager - Main Entry Point
+This is the launcher for the FastAPI application.
 
-This file serves as the main entry point for the application.
-The actual API implementation is in the api/ directory.
-
-To run the FastAPI server:
-    python main.py
-    
-Or use uvicorn directly:
-    uv run uvicorn api.main:app --reload --port 8000
+For development: python main.py
+For production: See deployment guides in docs/DEPLOYMENT.md
 """
+import uvicorn
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 if __name__ == "__main__":
-    import uvicorn
+    print("=" * 60)
+    print("🚀 Starting AI Hiring Manager Server")
+    print("=" * 60)
+    print(f"📍 Server: http://0.0.0.0:8000")
+    print(f"📚 API Docs: http://0.0.0.0:8000/docs")
+    print(f"🎤 Interview UI: file://{os.getcwd()}/frontend.html")
+    print("=" * 60)
+    print("\nPress Ctrl+C to stop\n")
     
-    print("=" * 60)
-    print("Starting AI Hiring Manager API Server")
-    print("=" * 60)
-    print("\nAPI Documentation will be available at:")
-    print("  - Swagger UI: http://localhost:8000/docs")
-    print("  - ReDoc:      http://localhost:8000/redoc")
-    print("  - API Root:   http://localhost:8000")
-    print("\nPress CTRL+C to stop the server")
-    print("=" * 60)
-    print()
-    
-    # Start the FastAPI server
+    # Start the server
     uvicorn.run(
         "api.main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True
+        reload=True,
+        log_level="info"
     )
