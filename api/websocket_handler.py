@@ -171,11 +171,14 @@ class WebSocketManager:
                 "stage": "introduction"
             })
             
-            # Clean up intro audio
+            # Clean up intro audio with proper error handling
+            await asyncio.sleep(0.5)  # Give time for file to be fully released
             try:
-                os.unlink(intro_audio_path)
-            except:
-                pass
+                if os.path.exists(intro_audio_path):
+                    os.unlink(intro_audio_path)
+            except Exception as e:
+                print(f"Warning: Could not delete intro audio file: {e}")
+                # Don't crash on cleanup errors
             
             # Main interview loop
             while session.is_active:
@@ -227,11 +230,14 @@ class WebSocketManager:
                         "stage": str(session.agent.state.stage)
                     })
                     
-                    # Clean up audio file
+                    # Clean up audio file with proper error handling
+                    await asyncio.sleep(0.5)  # Give time for file to be fully released
                     try:
-                        os.unlink(response_audio_path)
-                    except:
-                        pass
+                        if os.path.exists(response_audio_path):
+                            os.unlink(response_audio_path)
+                    except Exception as e:
+                        print(f"Warning: Could not delete response audio file: {e}")
+                        # Don't crash on cleanup errors
                     
                     # Check if interview is complete
                     if session.agent.state.stage.value == "conclusion":
@@ -248,10 +254,17 @@ class WebSocketManager:
         
         except Exception as e:
             print(f"Error in WebSocket handler: {e}")
-            await websocket.send_json({
-                "type": "error",
-                "message": str(e)
-            })
+            import traceback
+            traceback.print_exc()
+            # Only send error if WebSocket is still open
+            try:
+                if websocket.client_state.value == 1:  # CONNECTED state
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": str(e)
+                    })
+            except:
+                print("Could not send error message, WebSocket already closed")
         
         finally:
             # Clean up session

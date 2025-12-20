@@ -2,6 +2,7 @@
 FastAPI application for AI Hiring Manager chatbot
 """
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import sys
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.chatbot import get_response, load_documents
 from api.formatter import format_response
 from api.interview_routes import router as interview_router
+from api.candidate_routes import router as candidate_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -23,8 +25,23 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Include interview routes
+# Add CORS middleware to allow frontend connections
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Vite dev server
+        "http://localhost:3000",  # Alternative React dev server
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
 app.include_router(interview_router)
+app.include_router(candidate_router)
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
@@ -123,4 +140,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)

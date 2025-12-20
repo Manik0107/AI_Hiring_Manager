@@ -13,25 +13,41 @@ from core.config import MODEL_NAME, COLLECTION_NAME, DATA_DIR, DOCUMENTS_DIR
 # Load environment variables
 load_dotenv()
 
-# Initialize vector database with Gemini embeddings
-vector_db = Qdrant(
-    collection=COLLECTION_NAME,
-    path=str(DATA_DIR),
-    embedder=GeminiEmbedder(),
-)
+# Initialize components lazily
+_agent = None
+_knowledge_base = None
 
-# Create knowledge base
-knowledge_base = Knowledge(
-    vector_db=vector_db,
-)
+def get_agent():
+    global _agent, _knowledge_base
+    if _agent is None:
+        # Load environment variables
+        load_dotenv()
+        
+        # Initialize vector database with Gemini embeddings
+        vector_db = Qdrant(
+            collection=COLLECTION_NAME,
+            path=str(DATA_DIR),
+            embedder=GeminiEmbedder(),
+        )
+        
+        # Create knowledge base
+        _knowledge_base = Knowledge(
+            vector_db=vector_db,
+        )
+        
+        # Initialize agent with OpenRouter
+        _agent = Agent(
+            model=OpenRouter(MODEL_NAME),
+            knowledge=_knowledge_base,
+            debug_mode=False,
+            markdown=False,
+        )
+    return _agent
 
-# Initialize agent with OpenRouter
-agent = Agent(
-    model=OpenRouter(MODEL_NAME),
-    knowledge=knowledge_base,
-    debug_mode=False,  # Disable debug for clean output
-    markdown=False,    # Disable markdown formatting
-)
+def get_knowledge_base():
+    if _agent is None:
+        get_agent()
+    return _knowledge_base
 
 def load_documents():
     """Load all PDF documents from the documents directory into the knowledge base"""
@@ -41,10 +57,11 @@ def load_documents():
         print(f"No PDF files found in {DOCUMENTS_DIR}")
         return
     
+    kb = get_knowledge_base()
     for pdf_file in pdf_files:
         try:
             print(f"Loading {pdf_file.name}...")
-            knowledge_base.add_content(path=str(pdf_file))
+            kb.add_content(path=str(pdf_file))
             print(f"✓ Loaded {pdf_file.name}")
         except Exception as e:
             print(f"✗ Error loading {pdf_file.name}: {e}")
@@ -61,6 +78,7 @@ def get_response(message: str) -> str:
     """
     try:
         # Get response from agent
+        agent = get_agent()
         response = agent.run(message)
         
         # Extract the content from the response

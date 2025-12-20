@@ -289,7 +289,12 @@ Respond with ONLY a number between 0 and 100. No explanation, just the score."""
     def get_final_score(self) -> Dict[str, float]:
         """Calculate final interview score"""
         if not self.state.scores:
-            return {"total_score": 0.0, "average_score": 0.0}
+            return {
+                "total_score": 0.0, 
+                "average_score": 0.0,
+                "technical_avg": 0.0,
+                "behavioral_avg": 0.0
+            }
         
         average_score = sum(self.state.scores) / len(self.state.scores)
         
