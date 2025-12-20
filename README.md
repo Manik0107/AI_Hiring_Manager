@@ -1,209 +1,105 @@
-# Speech-to-Speech HR Interviewer
+# 🎯 Enterprise AI Hiring Manager
 
-A real-time speech-to-speech AI interviewer built with FastAPI, Groq API, and Edge-TTS.
+A full-stack, automated recruitment system featuring **AI Resume Screening**, **OTP-secured rounds**, **Interactive Skill Assessments**, and a **Real-time Speech-to-Speech HR Interviewer**.
 
-## Features
+## 🚀 Key Features
 
-- 🎤 **Speech-to-Speech**: Real-time voice conversation with AI interviewer
-- 🚀 **Fast & Free**: Uses Groq API (free tier) for transcription and LLM
-- 🎯 **Structured Interview**: Technical + Behavioral questions with scoring
-- 📊 **Automatic Scoring**: Real-time evaluation and final score
-- 🌐 **Web-based**: Works in any modern browser
+*   🤖 **AI Resume Screening**: Automatically evaluates resumes against job roles using LLMs with a binary suitability classifier.
+*   🔐 **OTP-Secured Journey**: Every recruitment stage (Aptitude, DSA, HR Interview) is protected by a unique OTP sent via simulated email.
+*   📝 **Interactive Skill Quizzes**:
+    *   **Aptitude Round**: 5-question logic/math assessment.
+    *   **DSA Round**: 5-question technical assessment on Core Data Structures & Algorithms.
+    *   **Passing Criteria**: Candidates must score 3/5 to trigger the next stage.
+*   🎤 **AI HR Interview**: Real-time speech-to-speech interaction powered by **Groq Llama 3.3**, **Whisper**, and **Edge-TTS**.
+*   📊 **Candidate Analytics**: Automatic evaluation of technical and behavioral proficiency with visual score reports.
+*   🌟 **Empathic Rejection**: Human-centric feedback for candidates who don't meet the threshold, maintaining a positive employer brand.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Backend**: FastAPI + WebSockets
-- **STT**: Groq Whisper API (free, fast)
-- **LLM**: Groq Llama 3.1 70B via Agno wrapper (free, 80+ tokens/sec)
-- **TTS**: Edge-TTS (free, high quality)
-- **Frontend**: Vanilla JavaScript with Web Audio API
+### Backend
+*   **FastAPI**: High-performance asynchronous API framework.
+*   **Agno (Agentic AI)**: Orchestrating LLM agents for screening and interviewing.
+*   **Groq / OpenRouter**: High-speed LLM inference (Llama 3.3 70B).
+*   **Qdrant**: Vector database for AI knowledge base integration.
+*   **Pypdf**: Resume text extraction.
 
-## Setup
+### Frontend
+*   **React (Vite)**: Modern, responsive frontend architecture.
+*   **Vanilla CSS**: Premium dark-mode aesthetics with glassmorphism.
+*   **Web Audio API**: Handling real-time audio streams for speech interviews.
 
-### 1. Install Dependencies
-
-```bash
-# Install Python packages
-pip install -r requirements.txt
-```
-
-### 2. Set Environment Variables
-
-Create a `.env` file:
-
-```env
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-Get your free Groq API key: https://console.groq.com
-
-### 3. Test Components
+## 📁 Project Structure
 
 ```bash
-# Test audio services (TTS/STT)
-python test_audio.py
-
-# Test interview agent logic
-python test_interview_agent.py
-```
-
-### 4. Run the Server
-
-```bash
-# Start FastAPI server
-uvicorn api.main:app --reload
-
-# Or use the legacy launcher
-python main.py
-```
-
-Server will run at: http://localhost:8000
-
-## Usage
-
-### Web Interface
-
-1. Open `frontend.html` in your browser (or navigate to `/interview`)
-2. Click "Start Interview"
-3. Hold "Speak" button and answer questions
-4. Release button when done speaking
-5. Get your final score!
-
-### API Documentation
-
-Visit http://localhost:8000/docs for full API documentation.
-
-### WebSocket Protocol
-
-Connect to `ws://localhost:8000/interview/ws`
-
-**1. Initialize:**
-```json
-{
-  "type": "init",
-  "session_id": "unique_id",
-  "job_role": "Software Engineer"
-}
-```
-
-**2. Send audio:**
-Send binary WebSocket frames (audio chunks in WebM/MP3 format)
-
-**3. Receive responses:**
-```json
-{
-  "type": "interviewer_response",
-  "text": "Can you tell me about your experience?",
-  "audio": "base64_encoded_mp3",
-  "transcript": "Your previous answer",
-  "stage": "technical"
-}
-```
-
-**4. End interview:**
-```json
-{
-  "type": "end_interview"
-}
-```
-
-## Interview Flow
-
-1. **Introduction** (30s)
-   - AI greets candidate
-   - Explains interview format
-   - Gets candidate name
-
-2. **Technical Questions** (3 questions)
-   - Technology experience
-   - Problem-solving examples
-   - Development practices
-
-3. **Behavioral Questions** (2 questions)
-   - Team collaboration
-   - Work style
-   - Career goals
-
-4. **Conclusion** (30s)
-   - Thank candidate
-   - Provide final score
-   - Next steps
-
-## Scoring
-
-- **Technical**: 60% weight
-  - Relevance to question
-  - Depth of knowledge
-  - Examples provided
-
-- **Behavioral**: 40% weight
-  - Communication clarity
-  - Professionalism
-  - Self-awareness
-
-**Final Score**: 0-100 points
-
-## Project Structure
-
-```
 AI_Hiring_Manager/
 ├── api/
-│   ├── main.py                 # FastAPI app
-│   ├── interview_routes.py     # Interview endpoints
-│   ├── websocket_handler.py    # WebSocket logic
-│   └── formatter.py            # Response formatting
+│   ├── candidate_routes.py    # Application, OTP, and Stage management
+│   ├── interview_routes.py    # WebSocket interaction
+│   └── main.py                # FastAPI entry point
 ├── core/
-│   ├── interview_agent.py      # Interview logic (Agno + Groq)
-│   ├── audio_services.py       # STT/TTS services
-│   ├── chatbot.py             # Original chatbot
-│   └── config.py              # Configuration
-├── frontend.html              # Web interface
-├── test_audio.py             # Audio services test
-├── test_interview_agent.py   # Agent test
-└── requirements.txt          # Python dependencies
+│   ├── resume_service.py      # LLM-based resume screening
+│   ├── notification_service.py # OTP generation and simulated delivery
+│   ├── interview_agent.py     # HR Interviewer logic
+│   └── audio_services.py      # STT and TTS engines
+├── gcc-hiring-frontend/       # React application
+│   ├── src/pages/ApplyPage.jsx     # AI Screening initiation
+│   ├── src/pages/ProfilePage.jsx   # Candidate Journey & OTP Verify
+│   ├── src/pages/QuizGateway.jsx   # Multi-round Skill Assessments
+│   └── src/pages/InterviewPage.jsx # Speech-to-Speech UI
+└── data/                      # Local JSON persistence (Mock Database)
 ```
 
-## Cost
+## ⚙️ Setup & Installation
 
-**100% FREE** with Groq's free tier:
-- 14,400 requests/day
-- ~1,000 interviews/day possible
-- No credit card required
+### 1. Prerequisites
+*   Python 3.10+
+*   Node.js & npm
 
-## Performance
-
-**Latency**: ~1-2 seconds end-to-end
-- STT: 200-400ms (Groq Whisper)
-- LLM: 500-1000ms (Llama 3.1 70B)
-- TTS: 300-600ms (Edge-TTS)
-
-## Troubleshooting
-
-### No GROQ_API_KEY
+### 2. Backend Setup
 ```bash
-# Add to .env file
-GROQ_API_KEY=gsk_...
+# Clone the repository
+git clone <repo-url>
+cd AI_Hiring_Manager
+
+# Create and activate virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install dependencies
+uv pip install -r requirements.txt
+
+# Configure .env
+cp .env.example .env # Add your GOOGLE_API_KEY, OPENROUTER_API_KEY, or GROQ_API_KEY
 ```
 
-### WebSocket connection failed
+### 3. Frontend Setup
 ```bash
-# Make sure server is running
-uvicorn api.main:app --reload
+cd gcc-hiring-frontend
+npm install
 ```
 
-### Microphone not working
-- Allow microphone access in browser
-- Use HTTPS or localhost only
-- Check browser console for errors
+## 🏃 Running the Application
 
-## Next Steps
+### Start Backend
+```bash
+# From root
+uv run python api/main.py
+```
 
-- [ ] Add question customization
-- [ ] Support multiple languages
-- [ ] Improve scoring algorithm with LLM evaluation
-- [ ] Add video support
-- [ ] Create mobile app version
+### Start Frontend
+```bash
+# From gcc-hiring-frontend
+npm run dev
+```
 
-## License
+## 🧪 Recruitment Workflow
 
-See LICENSE file for details.
+1.  **Apply**: Candidate submits resume. AI screens for role suitability (e.g., Software Dev, AI & ML).
+2.  **Verify**: If shortlisted, check the terminal console for the **Aptitude OTP**.
+3.  **Aptitude Round**: Verify OTP in Profile, then complete the 5-question logic quiz.
+4.  **DSA Round**: Upon passing Aptitude, a new **DSA OTP** is generated. Clear the technical quiz.
+5.  **HR Interview**: The final stage is a real-time voice conversation with the AI HR Manager.
+6.  **Results**: Receive a full Proficiency Summary and next steps.
+
+## 📜 License
+MIT License. See [LICENSE](LICENSE) for details.
