@@ -68,22 +68,13 @@ function QuizGateway() {
   const roundType = isDsa ? "dsa" : "aptitude";
   const roundName = isDsa ? "DSA Round" : "Aptitude Round";
 
-  const [step, setStep] = useState("initialLoading");
+  const [step, setStep] = useState("quiz");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [finishing, setFinishing] = useState(false);
 
   const questions = QUESTION_BANK[roundType];
-
-  // Initial loading
-  useEffect(() => {
-    if (step === "initialLoading") {
-      setTimeout(() => {
-        setStep("quiz");
-      }, 3000);
-    }
-  }, [step]);
 
   const handleNext = () => {
     if (selectedOption === null) {
@@ -109,7 +100,8 @@ function QuizGateway() {
       try {
         const formData = new FormData();
         formData.append("email", stored.email);
-        const response = await fetch("http://localhost:8000/candidates/complete-round", {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+        const response = await fetch(`${baseUrl}/candidates/complete-round`, {
           method: "POST",
           body: formData
         });
@@ -134,14 +126,6 @@ function QuizGateway() {
   return (
     <div style={styles.page}>
       <div style={styles.overlay}></div>
-
-      {/* INITIAL LOADING */}
-      {step === "initialLoading" && (
-        <div style={styles.loaderContainer}>
-          <video src="/assessment-loading.mp4" autoPlay muted playsInline style={styles.video} />
-          <p>Preparing your {roundName} Assessment...</p>
-        </div>
-      )}
 
       {/* QUIZ STEP */}
       {step === "quiz" && (

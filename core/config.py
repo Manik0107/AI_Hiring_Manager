@@ -9,6 +9,12 @@ BASE_DIR = Path(__file__).parent.parent
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+# Email configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = "manikmanavenddra@gmail.com"
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
+
 # Model settings
 MODEL_NAME = "google/gemini-2.5-flash"
 COLLECTION_NAME = "hiring-manager-knowledge"
