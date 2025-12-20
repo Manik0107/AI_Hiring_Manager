@@ -10,6 +10,7 @@ function InterviewPage() {
     const [currentAudio, setCurrentAudio] = useState(null);
     const [interviewComplete, setInterviewComplete] = useState(false);
     const [waitingForSummary, setWaitingForSummary] = useState(false);
+    const [showOffer, setShowOffer] = useState(false);
 
     const [statusIcon, setStatusIcon] = useState("🎤");
     const [statusText, setStatusText] = useState("Ready to Start");
@@ -380,6 +381,53 @@ function InterviewPage() {
                         >
                             Finish & Return to Profile
                         </button>
+
+                        {(scores?.total_score ?? 0) >= 0 && !showOffer && (
+                            <button
+                                style={{ ...styles.finishButton, marginTop: "15px", background: "#4caf50", color: "white" }}
+                                onClick={() => setShowOffer(true)}
+                            >
+                                📜 View Offer Letter
+                            </button>
+                        )}
+
+                        {showOffer && (
+                            <div style={styles.offerLetter}>
+                                <div style={styles.letterHeader}>
+                                    <h2 style={styles.companyName}>GLOBAL CAPABILITY CENTER</h2>
+                                    <p style={styles.letterDate}>Date: December 20, 2024</p>
+                                </div>
+
+                                <div style={styles.letterContent}>
+                                    <p>Dear <strong>{JSON.parse(localStorage.getItem("candidate"))?.name || "Candidate"}</strong>,</p>
+
+                                    <p>We are pleased to offer you the position of <strong>{JSON.parse(localStorage.getItem("candidate"))?.role || "Software Engineer"}</strong> at Global Capability Center.</p>
+
+                                    <p>Your performance during the interview process was exceptional, particularly in the HR and technical assessments. We are confident that your skills and experience will be a valuable asset to our team.</p>
+
+                                    <div style={styles.offerDetails}>
+                                        <p><strong>Joining Date:</strong> January 12, 2025</p>
+                                        <p><strong>Location:</strong> Hybrid / Bengaluru Office</p>
+                                        <p><strong>Reporting To:</strong> Engineering Manager</p>
+                                    </div>
+
+                                    <p>Please review the details of this offer. We look forward to having you join our innovative team.</p>
+
+                                    <div style={styles.letterSignature}>
+                                        <p>Sincerely,</p>
+                                        <p><strong>HR Department</strong></p>
+                                        <p>Global Capability Center</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    style={styles.printButton}
+                                    onClick={() => window.print()}
+                                >
+                                    Download as PDF
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -646,6 +694,75 @@ const styles = {
         transition: "all 0.3s",
         boxShadow: "0 10px 20px rgba(0, 170, 243, 0.2)",
     },
+    offerLetter: {
+        marginTop: "40px",
+        background: "white",
+        color: "#333",
+        padding: "50px",
+        borderRadius: "12px",
+        textAlign: "left",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+        border: "1px solid #ddd",
+        fontFamily: "'Times New Roman', Times, serif",
+        animation: "slideUp 0.6s ease-out",
+        "@media print": {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 9999,
+            margin: 0,
+        }
+    },
+    letterHeader: {
+        borderBottom: "2px solid #00aaf3ff",
+        marginBottom: "30px",
+        paddingBottom: "10px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+    },
+    companyName: {
+        color: "#0b1c2d",
+        fontSize: "24px",
+        margin: 0,
+        fontWeight: "800",
+    },
+    letterDate: {
+        fontSize: "14px",
+        margin: 0,
+        color: "#666",
+    },
+    letterContent: {
+        fontSize: "16px",
+        lineHeight: "1.8",
+        color: "#444",
+    },
+    offerDetails: {
+        background: "#f9f9f9",
+        padding: "20px",
+        borderRadius: "8px",
+        margin: "25px 0",
+        borderLeft: "5px solid #00aaf3ff",
+    },
+    letterSignature: {
+        marginTop: "40px",
+        borderTop: "1px solid #eee",
+        paddingTop: "20px",
+    },
+    printButton: {
+        marginTop: "30px",
+        padding: "12px 24px",
+        background: "#0b1c2d",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "600",
+        display: "block",
+        marginLeft: "auto",
+    }
 };
 
 export default InterviewPage;
