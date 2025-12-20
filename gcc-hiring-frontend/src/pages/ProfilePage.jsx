@@ -38,7 +38,8 @@ function ProfilePage() {
     const fetchStatus = async () => {
       if (stored.email) {
         try {
-          const response = await fetch(`http://localhost:8000/candidates/status/${stored.email}`);
+          const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+          const response = await fetch(`${baseUrl}/candidates/status/${stored.email}`);
           if (response.ok) {
             const data = await response.json();
             setCandidateData(data);
@@ -72,7 +73,8 @@ function ProfilePage() {
       formData.append("email", stored.email);
       formData.append("otp", otpValue);
 
-      const response = await fetch("http://localhost:8000/candidates/verify-otp", {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+      const response = await fetch(`${baseUrl}/candidates/verify-otp`, {
         method: "POST",
         body: formData
       });

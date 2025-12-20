@@ -328,7 +328,8 @@ function ApplyPage() {
                   submitData.append("role", selectedRole);
                   submitData.append("resume", formData.resume);
 
-                  const response = await fetch("http://localhost:8000/candidates/apply", {
+                  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+                  const response = await fetch(`${baseUrl}/candidates/apply`, {
                     method: "POST",
                     body: submitData,
                   });

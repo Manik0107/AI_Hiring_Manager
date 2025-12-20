@@ -39,7 +39,9 @@ function InterviewPage() {
 
     const startInterview = async () => {
         try {
-            const wsUrl = "ws://localhost:8000/interview/ws";
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+            const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || "ws://localhost:8000";
+            const wsUrl = `${wsBaseUrl}/interview/ws`;
             const ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
@@ -93,7 +95,8 @@ function InterviewPage() {
                     if (stored.email) {
                         const formData = new FormData();
                         formData.append("email", stored.email);
-                        fetch("http://localhost:8000/candidates/complete-round", {
+                        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+                        fetch(`${baseUrl}/candidates/complete-round`, {
                             method: "POST",
                             body: formData
                         }).then(() => {
@@ -382,7 +385,7 @@ function InterviewPage() {
                             Finish & Return to Profile
                         </button>
 
-                        {(scores?.total_score ?? 0) >= 0 && !showOffer && (
+                        {(scores?.total_score ?? 0) >= 80 && !showOffer && (
                             <button
                                 style={{ ...styles.finishButton, marginTop: "15px", background: "#4caf50", color: "white" }}
                                 onClick={() => setShowOffer(true)}
