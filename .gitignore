@@ -37,7 +37,7 @@ uv.lock
 *.log
 
 # Keep documents directory structure but ignore PDFs in git
-documents/*.pdf
+# documents/*.pdf
 !documents/.gitkeep
 
 # Ignore test files (developer only)
