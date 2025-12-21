@@ -21,7 +21,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # Default model selection - use OpenRouter for higher token limits
-MODEL_NAME = os.getenv("MODEL_NAME", "google/gemini-3-flash-preview")
+MODEL_NAME = os.getenv("MODEL_NAME", "google/gemini-2.5-flash")
 MODEL_PROVIDER = "openrouter"
 COLLECTION_NAME = "hiring-manager-knowledge"
 
