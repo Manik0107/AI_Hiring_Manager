@@ -42,6 +42,9 @@ def get_agent():
         _agent = Agent(
             model=model,
             knowledge=_knowledge_base,
+            search_knowledge=True,  # Enable knowledge base search
+            add_history_to_context=True,  # Enable conversation memory
+            num_history_runs=5,  # Keep last 5 conversation turns
             debug_mode=False,
             markdown=False,
         )

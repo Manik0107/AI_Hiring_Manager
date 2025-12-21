@@ -7,11 +7,16 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import sys
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging to suppress agno library warnings
+logging.getLogger("agno").setLevel(logging.ERROR)
+logging.getLogger("qdrant_client").setLevel(logging.ERROR)
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
