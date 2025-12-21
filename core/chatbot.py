@@ -25,12 +25,19 @@ def get_agent():
         # Load environment variables
         load_dotenv()
         
-        # Initialize database for session management and memory
-        db_path = DATA_DIR / "agent_sessions.db"
-        storage = SqliteAgentStorage(
-            table_name="agent_sessions",
-            db_file=str(db_path)
-        )
+        # Initialize database for session management and memory (optional)
+        storage = None
+        try:
+            db_path = DATA_DIR / "agent_sessions.db"
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            storage = SqliteAgentStorage(
+                table_name="agent_sessions",
+                db_file=str(db_path)
+            )
+            print(f"✓ Initialized agent storage at {db_path}")
+        except Exception as e:
+            print(f"⚠ Could not initialize database storage: {e}")
+            print("  Agent will work without persistent memory")
         
         # Initialize vector database with Gemini embeddings
         vector_db = Qdrant(
@@ -47,16 +54,23 @@ def get_agent():
         # Initialize agent with selected model provider
         model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
         
-        _agent = Agent(
-            model=model,
-            storage=storage,  # Add database storage for memory
-            knowledge=_knowledge_base,
-            search_knowledge=True,  # Enable knowledge base search
-            add_history_to_context=True,  # Enable conversation memory
-            num_history_runs=5,  # Keep last 5 conversation turns
-            debug_mode=False,
-            markdown=False,
-        )
+        # Build agent configuration
+        agent_config = {
+            "model": model,
+            "knowledge": _knowledge_base,
+            "search_knowledge": True,
+            "debug_mode": False,
+            "markdown": False,
+        }
+        
+        # Add storage and memory only if available
+        if storage:
+            agent_config["storage"] = storage
+            agent_config["add_history_to_context"] = True
+            agent_config["num_history_runs"] = 5
+        
+        _agent = Agent(**agent_config)
+
     return _agent
 
 def get_knowledge_base():
