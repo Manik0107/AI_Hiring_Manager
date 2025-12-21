@@ -62,7 +62,8 @@ def get_agent():
         if _knowledge_base:
             agent_config["knowledge"] = _knowledge_base
             agent_config["search_knowledge"] = True
-            print("✓ Agent initialized with knowledge base search")
+            agent_config["num_documents"] = 2  # Limit to top 2 results to avoid token overflow
+            print("✓ Agent initialized with knowledge base search (limited to 2 documents)")
         else:
             print("✓ Agent initialized without knowledge base")
         
