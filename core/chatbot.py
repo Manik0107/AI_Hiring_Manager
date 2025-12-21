@@ -61,8 +61,9 @@ def get_agent():
         # Add knowledge base if available
         if _knowledge_base:
             agent_config["knowledge"] = _knowledge_base
-            agent_config["search_knowledge"] = True
-            print("✓ Agent initialized with knowledge base search")
+            # Note: Not using search_knowledge=True to avoid function calling errors
+            # The agent will still reference the knowledge base through context
+            print("✓ Agent initialized with knowledge base")
         else:
             print("✓ Agent initialized without knowledge base")
         
