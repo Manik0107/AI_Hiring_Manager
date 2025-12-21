@@ -1,11 +1,8 @@
 import random
 import string
 import json
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from pathlib import Path
-from core.config import DATA_DIR, SMTP_SERVER, SMTP_PORT, SENDER_EMAIL, GMAIL_APP_PASSWORD
+from core.config import DATA_DIR, RESEND_API_KEY, SENDER_EMAIL
 
 CANDIDATES_FILE = DATA_DIR / "candidates.json"
 
@@ -33,24 +30,24 @@ def generate_otp(length=6):
 
 def send_otp_email(email, otp, round_name):
     """
-    Send OTP via Gmail SMTP.
+    Send OTP via Resend API (bypasses SMTP port restrictions).
     """
     print(f"\n🔄 STARTING email send task for {email}")
-    print(f"📧 SMTP_SERVER: {SMTP_SERVER}")
-    print(f"🔌 SMTP_PORT: {SMTP_PORT}")
-    print(f"👤 SENDER_EMAIL: {SENDER_EMAIL}")
-    print(f"🔑 GMAIL_APP_PASSWORD configured: {bool(GMAIL_APP_PASSWORD)}\n")
+    print(f"📧 Using Resend API")
+    print(f"🔑 RESEND_API_KEY configured: {bool(RESEND_API_KEY)}\n")
+    
+    if not RESEND_API_KEY:
+        print("❌ ERROR: RESEND_API_KEY not configured in environment variables")
+        return False
     
     try:
-        print("📝 Step 1: Creating email message...")
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = email
-        msg['Subject'] = f"Action Required for your {round_name} - AI Hiring Manager"
+        import resend
+        resend.api_key = RESEND_API_KEY
+        
+        print("📝 Step 1: Building email content...")
         
         # HTML email body
-        html_body = f"""
+        html_content = f"""
         <html>
             <head>
                 <style>
@@ -94,43 +91,22 @@ def send_otp_email(email, otp, round_name):
         </html>
         """
         
-        print("📎 Step 2: Attaching HTML body...")
-        msg.attach(MIMEText(html_body, 'html'))
+        print("📤 Step 2: Sending via Resend API...")
         
-        print(f"🔌 Step 3: Connecting to SMTP server (Port {SMTP_PORT})...")
-        # Send email via Gmail SMTP with timeout
-        if SMTP_PORT == 465:
-            print("🔒 Using SMTP_SSL...")
-            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30)
-            print("✅ Connected! Logging in...")
-            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-            print("✅ Login successful! Sending message...")
-            server.send_message(msg)
-            server.quit()
-        else:
-            print("🔓 Using SMTP with STARTTLS...")
-            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30)
-            print("✅ Connected! Starting TLS...")
-            server.starttls()
-            print("✅ TLS started! Logging in...")
-            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-            print("✅ Login successful! Sending message...")
-            server.send_message(msg)
-            server.quit()
+        params = {
+            "from": f"AI Hiring Manager <{SENDER_EMAIL}>",
+            "to": [email],
+            "subject": f"Action Required for your {round_name} - AI Hiring Manager",
+            "html": html_content,
+        }
+        
+        response = resend.Emails.send(params)
         
         print(f"\n✅ OTP Email successfully sent to: {email}")
-        print(f"📧 Round: {round_name}\n")
+        print(f"📧 Round: {round_name}")
+        print(f"📬 Resend Email ID: {response.get('id', 'N/A')}\n")
         return True
         
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"\n❌ AUTHENTICATION FAILED for {email}")
-        print(f"Check your SENDER_EMAIL and GMAIL_APP_PASSWORD in Render environment variables.")
-        print(f"Error: {str(e)}\n")
-        return False
-    except TimeoutError as e:
-        print(f"\n❌ TIMEOUT: SMTP connection timed out for {email}")
-        print(f"Error: {str(e)}\n")
-        return False
     except Exception as e:
         print(f"\n❌ Failed to send OTP email to {email}")
         print(f"Error type: {type(e).__name__}")
@@ -141,17 +117,22 @@ def send_otp_email(email, otp, round_name):
 
 def send_offer_letter_email(email, name, role):
     """
-    Send offer letter via Gmail SMTP when candidate completes all rounds.
+    Send offer letter via Resend API when candidate completes all rounds.
     """
+    print(f"\n🔄 STARTING offer letter send task for {email}")
+    
+    if not RESEND_API_KEY:
+        print("❌ ERROR: RESEND_API_KEY not configured in environment variables")
+        return False
+    
     try:
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = email
-        msg['Subject'] = f"🎉 Congratulations! Offer Letter from AI Hiring Manager"
+        import resend
+        resend.api_key = RESEND_API_KEY
+        
+        print("📝 Building offer letter content...")
         
         # HTML email body
-        html_body = f"""
+        html_content = f"""
         <html>
             <head>
                 <style>
@@ -218,20 +199,21 @@ def send_offer_letter_email(email, name, role):
         </html>
         """
         
-        # Send email via Gmail SMTP
-        if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-                server.send_message(msg)
+        print("📤 Sending via Resend API...")
+        
+        params = {
+            "from": f"AI Hiring Manager <{SENDER_EMAIL}>",
+            "to": [email],
+            "subject": "🎉 Congratulations! Offer Letter from AI Hiring Manager",
+            "html": html_content,
+        }
+        
+        response = resend.Emails.send(params)
         
         print(f"\n🎉 Offer Letter Email successfully sent to: {email}")
         print(f"👤 Candidate: {name}")
-        print(f"💼 Role: {role}\n")
+        print(f"💼 Role: {role}")
+        print(f"📬 Resend Email ID: {response.get('id', 'N/A')}\n")
         return True
         
     except Exception as e:

@@ -6,6 +6,7 @@ openai
 python-dotenv
 fastapi
 uvicorn[standard]
+resend
 pydantic
 pydantic-settings
 groq
