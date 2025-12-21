@@ -42,6 +42,7 @@ def send_otp_email(email, otp, round_name):
     print(f"🔑 GMAIL_APP_PASSWORD configured: {bool(GMAIL_APP_PASSWORD)}\n")
     
     try:
+        print("📝 Step 1: Creating email message...")
         # Create message
         msg = MIMEMultipart('alternative')
         msg['From'] = SENDER_EMAIL
@@ -93,19 +94,29 @@ def send_otp_email(email, otp, round_name):
         </html>
         """
         
-        # Attach HTML body
+        print("📎 Step 2: Attaching HTML body...")
         msg.attach(MIMEText(html_body, 'html'))
         
-        # Send email via Gmail SMTP
+        print(f"🔌 Step 3: Connecting to SMTP server (Port {SMTP_PORT})...")
+        # Send email via Gmail SMTP with timeout
         if SMTP_PORT == 465:
-            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-                server.send_message(msg)
+            print("🔒 Using SMTP_SSL...")
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=30)
+            print("✅ Connected! Logging in...")
+            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+            print("✅ Login successful! Sending message...")
+            server.send_message(msg)
+            server.quit()
         else:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-                server.send_message(msg)
+            print("🔓 Using SMTP with STARTTLS...")
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30)
+            print("✅ Connected! Starting TLS...")
+            server.starttls()
+            print("✅ TLS started! Logging in...")
+            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+            print("✅ Login successful! Sending message...")
+            server.send_message(msg)
+            server.quit()
         
         print(f"\n✅ OTP Email successfully sent to: {email}")
         print(f"📧 Round: {round_name}\n")
@@ -116,10 +127,16 @@ def send_otp_email(email, otp, round_name):
         print(f"Check your SENDER_EMAIL and GMAIL_APP_PASSWORD in Render environment variables.")
         print(f"Error: {str(e)}\n")
         return False
+    except TimeoutError as e:
+        print(f"\n❌ TIMEOUT: SMTP connection timed out for {email}")
+        print(f"Error: {str(e)}\n")
+        return False
     except Exception as e:
         print(f"\n❌ Failed to send OTP email to {email}")
         print(f"Error type: {type(e).__name__}")
         print(f"Error: {str(e)}\n")
+        import traceback
+        traceback.print_exc()
         return False
 
 def send_offer_letter_email(email, name, role):
