@@ -35,6 +35,12 @@ def send_otp_email(email, otp, round_name):
     """
     Send OTP via Gmail SMTP.
     """
+    print(f"\n🔄 STARTING email send task for {email}")
+    print(f"📧 SMTP_SERVER: {SMTP_SERVER}")
+    print(f"🔌 SMTP_PORT: {SMTP_PORT}")
+    print(f"👤 SENDER_EMAIL: {SENDER_EMAIL}")
+    print(f"🔑 GMAIL_APP_PASSWORD configured: {bool(GMAIL_APP_PASSWORD)}\n")
+    
     try:
         # Create message
         msg = MIMEMultipart('alternative')
