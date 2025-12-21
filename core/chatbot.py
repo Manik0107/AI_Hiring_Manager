@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from agno.agent import Agent
 from agno.knowledge.knowledge import Knowledge
 from agno.vectordb.qdrant import Qdrant
+from agno.storage.agent.sqlite import SqliteAgentStorage
 from agno.models.openrouter import OpenRouter
 from agno.models.groq import Groq
 from agno.knowledge.embedder.google import GeminiEmbedder
@@ -24,6 +25,13 @@ def get_agent():
         # Load environment variables
         load_dotenv()
         
+        # Initialize database for session management and memory
+        db_path = DATA_DIR / "agent_sessions.db"
+        storage = SqliteAgentStorage(
+            table_name="agent_sessions",
+            db_file=str(db_path)
+        )
+        
         # Initialize vector database with Gemini embeddings
         vector_db = Qdrant(
             collection=COLLECTION_NAME,
@@ -41,6 +49,7 @@ def get_agent():
         
         _agent = Agent(
             model=model,
+            storage=storage,  # Add database storage for memory
             knowledge=_knowledge_base,
             search_knowledge=True,  # Enable knowledge base search
             add_history_to_context=True,  # Enable conversation memory
@@ -72,20 +81,21 @@ def load_documents():
         except Exception as e:
             print(f"✗ Error loading {pdf_file.name}: {e}")
 
-def get_response(message: str) -> str:
+def get_response(message: str, session_id: str = "default") -> str:
     """
     Get a response from the agent for the given message
     
     Args:
         message: User's question or message
+        session_id: Unique session identifier for conversation tracking
         
     Returns:
         Agent's response as a string
     """
     try:
-        # Get response from agent
+        # Get response from agent with session tracking
         agent = get_agent()
-        response = agent.run(message)
+        response = agent.run(message, session_id=session_id)
         
         # Extract the content from the response
         if hasattr(response, 'content'):
