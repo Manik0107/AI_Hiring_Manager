@@ -25,8 +25,8 @@ def screen_resume(resume_text: str, job_role: str) -> bool:
     if not resume_text:
         return False
 
-    # Initialize agent with selected model provider
-    model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
+    # Initialize agent with Groq (more reliable for screening)
+    model = Groq(id="llama-3.3-70b-versatile")
 
     screening_agent = Agent(
         model=model,
@@ -36,10 +36,14 @@ def screen_resume(resume_text: str, job_role: str) -> bool:
             "Evaluate based on skills, experience, and education.",
             "Respond ONLY with 'yes' or 'no'. No other text, no explanation.",
         ],
-        markdown=False
+        markdown=False,
     )
 
-    prompt = f"Resume Content:\n{resume_text}\n\nIs this resume suitable for the role of '{job_role}'? Answer yes or no."
+    # Truncate resume if too long to avoid token issues
+    max_resume_length = 2000  # characters
+    truncated_resume = resume_text[:max_resume_length] if len(resume_text) > max_resume_length else resume_text
+    
+    prompt = f"Resume Content:\n{truncated_resume}\n\nIs this resume suitable for the role of '{job_role}'? Answer yes or no."
     
     try:
         response = screening_agent.run(prompt)
