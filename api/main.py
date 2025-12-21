@@ -114,11 +114,8 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     
     try:
-        # Get session ID or use message hash as fallback
-        session_id = request.session_id if request.session_id else "default"
-        
-        # Get response from agent with session tracking
-        raw_response = get_response(request.message, session_id=session_id)
+        # Get response from agent
+        raw_response = get_response(request.message)
         
         # Format the response
         formatted = format_response(raw_response)

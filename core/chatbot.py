@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from agno.agent import Agent
 from agno.knowledge.knowledge import Knowledge
 from agno.vectordb.qdrant import Qdrant
-from agno.storage.agent.sqlite import SqliteAgentStorage
 from agno.models.openrouter import OpenRouter
 from agno.models.groq import Groq
 from agno.knowledge.embedder.google import GeminiEmbedder
@@ -25,19 +24,8 @@ def get_agent():
         # Load environment variables
         load_dotenv()
         
-        # Initialize database for session management and memory (optional)
-        storage = None
-        try:
-            db_path = DATA_DIR / "agent_sessions.db"
-            DATA_DIR.mkdir(parents=True, exist_ok=True)
-            storage = SqliteAgentStorage(
-                table_name="agent_sessions",
-                db_file=str(db_path)
-            )
-            print(f"✓ Initialized agent storage at {db_path}")
-        except Exception as e:
-            print(f"⚠ Could not initialize database storage: {e}")
-            print("  Agent will work without persistent memory")
+        # Ensure data directory exists
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
         
         # Initialize vector database with Gemini embeddings
         vector_db = Qdrant(
@@ -54,22 +42,15 @@ def get_agent():
         # Initialize agent with selected model provider
         model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
         
-        # Build agent configuration
-        agent_config = {
-            "model": model,
-            "knowledge": _knowledge_base,
-            "search_knowledge": True,
-            "debug_mode": False,
-            "markdown": False,
-        }
-        
-        # Add storage and memory only if available
-        if storage:
-            agent_config["storage"] = storage
-            agent_config["add_history_to_context"] = True
-            agent_config["num_history_runs"] = 5
-        
-        _agent = Agent(**agent_config)
+        # Create agent with knowledge base search enabled
+        _agent = Agent(
+            model=model,
+            knowledge=_knowledge_base,
+            search_knowledge=True,  # Enable knowledge base search
+            debug_mode=False,
+            markdown=False,
+        )
+        print("✓ Agent initialized with knowledge base search")
 
     return _agent
 
@@ -95,21 +76,20 @@ def load_documents():
         except Exception as e:
             print(f"✗ Error loading {pdf_file.name}: {e}")
 
-def get_response(message: str, session_id: str = "default") -> str:
+def get_response(message: str) -> str:
     """
     Get a response from the agent for the given message
     
     Args:
         message: User's question or message
-        session_id: Unique session identifier for conversation tracking
         
     Returns:
         Agent's response as a string
     """
     try:
-        # Get response from agent with session tracking
+        # Get response from agent
         agent = get_agent()
-        response = agent.run(message, session_id=session_id)
+        response = agent.run(message)
         
         # Extract the content from the response
         if hasattr(response, 'content'):
