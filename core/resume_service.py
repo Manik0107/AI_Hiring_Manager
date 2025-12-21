@@ -2,7 +2,8 @@ import os
 from pypdf import PdfReader
 from agno.agent import Agent
 from agno.models.openrouter import OpenRouter
-from core.config import MODEL_NAME
+from agno.models.groq import Groq
+from core.config import MODEL_NAME, MODEL_PROVIDER
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from a PDF file"""
@@ -24,8 +25,11 @@ def screen_resume(resume_text: str, job_role: str) -> bool:
     if not resume_text:
         return False
 
+    # Initialize agent with selected model provider
+    model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
+
     screening_agent = Agent(
-        model=OpenRouter(MODEL_NAME),
+        model=model,
         instructions=[
             "You are an expert HR recruiter.",
             f"Your task is to determine if the candidate's resume is suitable for the role of '{job_role}'.",

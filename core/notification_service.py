@@ -100,8 +100,14 @@ def send_otp_email(email, otp, round_name):
         print(f"📧 Round: {round_name}\n")
         return True
         
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"\n❌ AUTHENTICATION FAILED for {email}")
+        print(f"Check your SENDER_EMAIL and GMAIL_APP_PASSWORD in Render environment variables.")
+        print(f"Error: {str(e)}\n")
+        return False
     except Exception as e:
         print(f"\n❌ Failed to send OTP email to {email}")
+        print(f"Error type: {type(e).__name__}")
         print(f"Error: {str(e)}\n")
         return False
 

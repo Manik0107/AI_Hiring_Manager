@@ -10,13 +10,22 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # Email configuration
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SENDER_EMAIL = "manikmanavenddra@gmail.com"
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SENDER_EMAIL = os.getenv("SENDER_EMAIL", "manikmanavenddra@gmail.com")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 
 # Model settings
-MODEL_NAME = "google/gemini-2.5-flash"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# Default model selection
+if GROQ_API_KEY:
+    MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
+    MODEL_PROVIDER = "groq"
+else:
+    MODEL_NAME = os.getenv("MODEL_NAME", "google/gemini-2.0-flash")
+    MODEL_PROVIDER = "openrouter"
 COLLECTION_NAME = "hiring-manager-knowledge"
 
 # Paths

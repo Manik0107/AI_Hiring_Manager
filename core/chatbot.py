@@ -7,8 +7,9 @@ from agno.agent import Agent
 from agno.knowledge.knowledge import Knowledge
 from agno.vectordb.qdrant import Qdrant
 from agno.models.openrouter import OpenRouter
+from agno.models.groq import Groq
 from agno.knowledge.embedder.google import GeminiEmbedder
-from core.config import MODEL_NAME, COLLECTION_NAME, DATA_DIR, DOCUMENTS_DIR
+from core.config import MODEL_NAME, COLLECTION_NAME, DATA_DIR, DOCUMENTS_DIR, MODEL_PROVIDER
 
 # Load environment variables
 load_dotenv()
@@ -35,9 +36,11 @@ def get_agent():
             vector_db=vector_db,
         )
         
-        # Initialize agent with OpenRouter
+        # Initialize agent with selected model provider
+        model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
+        
         _agent = Agent(
-            model=OpenRouter(MODEL_NAME),
+            model=model,
             knowledge=_knowledge_base,
             debug_mode=False,
             markdown=False,
