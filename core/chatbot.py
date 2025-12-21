@@ -25,33 +25,49 @@ def get_agent():
         load_dotenv()
         
         # Ensure data directory exists
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            print(f"✓ Data directory: {DATA_DIR}")
+        except Exception as e:
+            print(f"⚠ Could not create data directory: {e}")
         
-        # Initialize vector database with Gemini embeddings
-        vector_db = Qdrant(
-            collection=COLLECTION_NAME,
-            path=str(DATA_DIR),
-            embedder=GeminiEmbedder(),
-        )
-        
-        # Create knowledge base with result limits
-        _knowledge_base = Knowledge(
-            vector_db=vector_db,
-            num_documents=2,  # Limit to top 2 results to avoid token overflow
-        )
+        # Initialize vector database and knowledge base (optional)
+        try:
+            vector_db = Qdrant(
+                collection=COLLECTION_NAME,
+                path=str(DATA_DIR),
+                embedder=GeminiEmbedder(),
+            )
+            
+            _knowledge_base = Knowledge(
+                vector_db=vector_db,
+                num_documents=2,  # Limit to top 2 results to avoid token overflow
+            )
+            print("✓ Knowledge base initialized")
+        except Exception as e:
+            print(f"⚠ Could not initialize knowledge base: {e}")
+            print("  Agent will work without knowledge base")
+            _knowledge_base = None
         
         # Initialize agent with selected model provider
         model = Groq(id=MODEL_NAME) if MODEL_PROVIDER == "groq" else OpenRouter(MODEL_NAME)
         
-        # Create agent with knowledge base search enabled
-        _agent = Agent(
-            model=model,
-            knowledge=_knowledge_base,
-            search_knowledge=True,  # Enable knowledge base search
-            debug_mode=False,
-            markdown=False,
-        )
-        print("✓ Agent initialized with knowledge base search (limited to 2 documents)")
+        # Create agent configuration
+        agent_config = {
+            "model": model,
+            "debug_mode": False,
+            "markdown": False,
+        }
+        
+        # Add knowledge base if available
+        if _knowledge_base:
+            agent_config["knowledge"] = _knowledge_base
+            agent_config["search_knowledge"] = True
+            print("✓ Agent initialized with knowledge base search")
+        else:
+            print("✓ Agent initialized without knowledge base")
+        
+        _agent = Agent(**agent_config)
 
     return _agent
 
