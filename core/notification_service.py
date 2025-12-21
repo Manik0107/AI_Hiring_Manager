@@ -93,8 +93,12 @@ def send_otp_email(email, otp, round_name):
         
         print("📤 Step 2: Sending via Resend API...")
         
+        # Use Resend's test sender (no verification needed)
+        # For production: add your own domain at resend.com/domains
+        sender_email = "onboarding@resend.dev"
+        
         params = {
-            "from": f"AI Hiring Manager <{SENDER_EMAIL}>",
+            "from": f"AI Hiring Manager <{sender_email}>",
             "to": [email],
             "subject": f"Action Required for your {round_name} - AI Hiring Manager",
             "html": html_content,
@@ -201,8 +205,11 @@ def send_offer_letter_email(email, name, role):
         
         print("📤 Sending via Resend API...")
         
+        # Use Resend's test sender (no verification needed)
+        sender_email = "onboarding@resend.dev"
+        
         params = {
-            "from": f"AI Hiring Manager <{SENDER_EMAIL}>",
+            "from": f"AI Hiring Manager <{sender_email}>",
             "to": [email],
             "subject": "🎉 Congratulations! Offer Letter from AI Hiring Manager",
             "html": html_content,
