@@ -1,17 +1,23 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks
 import shutil
 from pathlib import Path
 from typing import Optional
-import os
-
 from core.resume_service import extract_text_from_pdf, screen_resume
-from core.notification_service import initialize_candidate, verify_otp, get_candidates_db, advance_candidate
+from core.notification_service import (
+    initialize_candidate, 
+    verify_otp, 
+    get_candidates_db, 
+    advance_candidate, 
+    send_otp_email, 
+    send_offer_letter_email
+)
 from core.config import DOCUMENTS_DIR
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
 
 @router.post("/apply")
 async def apply(
+    background_tasks: BackgroundTasks,
     fullName: str = Form(...),
     email: str = Form(...),
     role: str = Form(...),
@@ -21,7 +27,7 @@ async def apply(
     Handle candidate application:
     1. Save resume
     2. Screen resume using LLM
-    3. If suitable, initialize candidate and send OTP email
+    3. If suitable, initialize candidate and send OTP email in background
     """
     # Save the resume temporarily
     resume_path = DOCUMENTS_DIR / f"{email}_resume.pdf"
@@ -33,7 +39,10 @@ async def apply(
     is_suitable = screen_resume(text, role)
     
     if is_suitable:
-        candidate_data = initialize_candidate(email, fullName, role)
+        candidate_data, otp = initialize_candidate(email, fullName, role)
+        # Send email in background to speed up response
+        background_tasks.add_task(send_otp_email, email, otp, "Aptitude Round")
+        
         return {
             "status": "success",
             "message": "Resume shortlisted! An OTP has been sent to your email.",
@@ -68,10 +77,24 @@ async def get_status(email: str):
         raise HTTPException(status_code=404, detail="Candidate not found")
 
 @router.post("/complete-round")
-async def complete_round(email: str = Form(...)):
-    """Mark the current round as completed and trigger next OTP"""
-    candidate = advance_candidate(email)
-    if candidate:
-        return {"status": "success", "message": "Round completed. Next OTP sent.", "candidate": candidate}
+async def complete_round(background_tasks: BackgroundTasks, email: str = Form(...)):
+    """Mark the current round as completed and trigger next steps in background"""
+    result = advance_candidate(email)
+    if result:
+        candidate, next_otp, next_round = result
+        
+        if next_otp and next_round:
+            # Send next round OTP in background
+            background_tasks.add_task(send_otp_email, email, next_otp, next_round)
+            return {"status": "success", "message": f"Round completed. OTP for {next_round} sent in background.", "candidate": candidate}
+        else:
+            # All rounds completed - send offer letter in background
+            background_tasks.add_task(
+                send_offer_letter_email, 
+                email, 
+                candidate.get("name", "Candidate"), 
+                candidate.get("role", "the position")
+            )
+            return {"status": "success", "message": "All rounds completed! Offer letter sent in background.", "candidate": candidate}
     else:
         raise HTTPException(status_code=404, detail="Candidate not found or error advancing")

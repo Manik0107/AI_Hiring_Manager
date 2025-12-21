@@ -91,10 +91,15 @@ def send_otp_email(email, otp, round_name):
         msg.attach(MIMEText(html_body, 'html'))
         
         # Send email via Gmail SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-            server.send_message(msg)
+        if SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
         
         print(f"\n✅ OTP Email successfully sent to: {email}")
         print(f"📧 Round: {round_name}\n")
@@ -190,14 +195,16 @@ def send_offer_letter_email(email, name, role):
         </html>
         """
         
-        # Attach HTML body
-        msg.attach(MIMEText(html_body, 'html'))
-        
         # Send email via Gmail SMTP
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-            server.send_message(msg)
+        if SMTP_PORT == 465:
+            with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+                server.send_message(msg)
         
         print(f"\n🎉 Offer Letter Email successfully sent to: {email}")
         print(f"👤 Candidate: {name}")
@@ -229,8 +236,8 @@ def initialize_candidate(email, name, role):
         }
     }
     save_candidate(email, candidate_data)
-    send_otp_email(email, otp, "Aptitude Round")
-    return candidate_data
+    # Note: send_otp_email will be called as a background task by the route
+    return candidate_data, otp
 
 def verify_otp(email, user_otp):
     db = get_candidates_db()
@@ -282,17 +289,14 @@ def advance_candidate(email):
             }
             candidate["otp_verified"] = False
             save_candidate(email, candidate)
-            send_otp_email(email, new_otp, next_round)
-            return candidate
+            # Note: send_otp_email will be called as a background task
+            return candidate, new_otp, next_round
         else:
-            # All rounds completed - send offer letter
+            # All rounds completed
             candidate["status"] = "Completed"
             candidate["next_round"] = "Offer Letter Sent"
             save_candidate(email, candidate)
-            
-            # Send offer letter email
-            send_offer_letter_email(email, candidate.get("name", "Candidate"), candidate.get("role", "the position"))
-            
-            return candidate
+            # Note: send_offer_letter_email will be called as a background task
+            return candidate, None, None
     except ValueError:
         return None
