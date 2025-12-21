@@ -20,13 +20,9 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Default model selection
-if GROQ_API_KEY:
-    MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
-    MODEL_PROVIDER = "groq"
-else:
-    MODEL_NAME = os.getenv("MODEL_NAME", "google/gemini-2.0-flash")
-    MODEL_PROVIDER = "openrouter"
+# Default model selection - use OpenRouter for higher token limits
+MODEL_NAME = os.getenv("MODEL_NAME", "google/gemini-2.0-flash-exp")
+MODEL_PROVIDER = "openrouter"
 COLLECTION_NAME = "hiring-manager-knowledge"
 
 # Paths
