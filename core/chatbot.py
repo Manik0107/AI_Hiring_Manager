@@ -41,7 +41,6 @@ def get_agent():
             
             _knowledge_base = Knowledge(
                 vector_db=vector_db,
-                num_documents=2,  # Limit to top 2 results to avoid token overflow
             )
             print("✓ Knowledge base initialized")
         except Exception as e:
