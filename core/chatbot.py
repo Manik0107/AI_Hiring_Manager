@@ -8,7 +8,7 @@ from agno.knowledge.knowledge import Knowledge
 from agno.vectordb.qdrant import Qdrant
 from agno.models.openrouter import OpenRouter
 from agno.models.groq import Groq
-from agno.knowledge.embedder.google import GeminiEmbedder
+from agno.knowledge.embedder.openai import OpenAIEmbedder
 from core.config import MODEL_NAME, COLLECTION_NAME, DATA_DIR, DOCUMENTS_DIR, MODEL_PROVIDER
 
 # Load environment variables
@@ -36,7 +36,7 @@ def get_agent():
             vector_db = Qdrant(
                 collection=COLLECTION_NAME,
                 path=str(DATA_DIR),
-                embedder=GeminiEmbedder(),
+                embedder=OpenAIEmbedder(),  # Using OpenAI to avoid Google quota limits
             )
             
             _knowledge_base = Knowledge(
