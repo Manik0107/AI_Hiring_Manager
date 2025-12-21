@@ -78,13 +78,18 @@ def get_knowledge_base():
 
 def load_documents():
     """Load all PDF documents from the documents directory into the knowledge base"""
+    # Check if knowledge base is available
+    kb = get_knowledge_base()
+    if kb is None:
+        print("⚠ Knowledge base not available, skipping document loading")
+        return
+    
     pdf_files = list(DOCUMENTS_DIR.glob("*.pdf"))
     
     if not pdf_files:
         print(f"No PDF files found in {DOCUMENTS_DIR}")
         return
     
-    kb = get_knowledge_base()
     for pdf_file in pdf_files:
         try:
             print(f"Loading {pdf_file.name}...")
