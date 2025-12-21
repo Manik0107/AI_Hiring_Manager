@@ -34,9 +34,10 @@ def get_agent():
             embedder=GeminiEmbedder(),
         )
         
-        # Create knowledge base
+        # Create knowledge base with result limits
         _knowledge_base = Knowledge(
             vector_db=vector_db,
+            num_documents=2,  # Limit to top 2 results to avoid token overflow
         )
         
         # Initialize agent with selected model provider
@@ -50,7 +51,7 @@ def get_agent():
             debug_mode=False,
             markdown=False,
         )
-        print("✓ Agent initialized with knowledge base search")
+        print("✓ Agent initialized with knowledge base search (limited to 2 documents)")
 
     return _agent
 
