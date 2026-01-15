@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide - AI Hiring Manager
+# Deployment Guide - AI Hiring Manager
 
 This guide will help you deploy your AI Hiring Manager application to production.
 
@@ -8,7 +8,7 @@ This guide will help you deploy your AI Hiring Manager application to production
 
 ## Quick Start
 
-### 1️⃣ Deploy Backend to Render
+### 1. Deploy Backend to Render
 
 1. **Create Account**: Go to [render.com](https://render.com) and sign up
 2. **New Web Service**: Click "New +" → "Web Service"
@@ -29,7 +29,7 @@ This guide will help you deploy your AI Hiring Manager application to production
 6. **Deploy** and wait 5-10 minutes
 7. **Save your URL**: `https://your-backend.onrender.com`
 
-### 2️⃣ Deploy Frontend to Vercel
+### 2. Deploy Frontend to Vercel
 
 1. **Create Account**: Go to [vercel.com](https://vercel.com) and sign up
 2. **New Project**: Click "Add New..." → "Project"
@@ -44,11 +44,11 @@ This guide will help you deploy your AI Hiring Manager application to production
    VITE_API_BASE_URL=https://your-backend.onrender.com
    VITE_WS_BASE_URL=wss://your-backend.onrender.com
    ```
-   ⚠️ **Important**: Use `wss://` (not `ws://`) for WebSocket URL
+   **Important**: Use `wss://` (not `ws://`) for WebSocket URL
 6. **Deploy** and wait 2-5 minutes
 7. **Save your URL**: `https://your-app.vercel.app`
 
-### 3️⃣ Update CORS Settings
+### 3. Update CORS Settings
 
 1. Go back to **Render Dashboard**
 2. Update `ALLOWED_ORIGINS` environment variable:
@@ -65,7 +65,7 @@ This guide will help you deploy your AI Hiring Manager application to production
 - [ ] Application form submission works
 - [ ] Aptitude quiz completes
 - [ ] DSA quiz completes
-- [ ] HR Interview WebSocket connection works ⚠️ **Critical**
+- [ ] HR Interview WebSocket connection works **Critical**
 - [ ] Chatbot responds to messages
 - [ ] Profile page shows correct status
 
@@ -157,4 +157,4 @@ Total deployment: **30-40 minutes**
 
 ---
 
-Good luck with your deployment! 🎉
+Good luck with your deployment!

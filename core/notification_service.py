@@ -32,19 +32,19 @@ def send_otp_email(email, otp, round_name):
     """
     Send OTP via Resend API (bypasses SMTP port restrictions).
     """
-    print(f"\n🔄 STARTING email send task for {email}")
-    print(f"📧 Using Resend API")
-    print(f"🔑 RESEND_API_KEY configured: {bool(RESEND_API_KEY)}\n")
+    print(f"\nSTARTING email send task for {email}")
+    print(f"Using Resend API")
+    print(f"RESEND_API_KEY configured: {bool(RESEND_API_KEY)}\n")
     
     if not RESEND_API_KEY:
-        print("❌ ERROR: RESEND_API_KEY not configured in environment variables")
+        print("ERROR: RESEND_API_KEY not configured in environment variables")
         return False
     
     try:
         import resend
         resend.api_key = RESEND_API_KEY
         
-        print("📝 Step 1: Building email content...")
+        print("Step 1: Building email content...")
         
         # HTML email body
         html_content = f"""
@@ -63,7 +63,7 @@ def send_otp_email(email, otp, round_name):
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🎯 AI Hiring Manager</h1>
+                        <h1>AI Hiring Manager</h1>
                         <p>You've Advanced to the Next Round!</p>
                     </div>
                     <div class="content">
@@ -79,7 +79,7 @@ def send_otp_email(email, otp, round_name):
                         
                         <p><strong>Important:</strong> This OTP is valid for this round only. Do not share it with anyone.</p>
                         
-                        <p>Good luck! 🚀</p>
+                        <p>Good luck!</p>
                         
                         <div class="footer">
                             <p>This is an automated message from AI Hiring Manager.<br>
@@ -91,7 +91,7 @@ def send_otp_email(email, otp, round_name):
         </html>
         """
         
-        print("📤 Step 2: Sending via Resend API...")
+        print("Step 2: Sending via Resend API...")
         
         # Use Resend's test sender (no verification needed)
         # For production: add your own domain at resend.com/domains
@@ -106,13 +106,13 @@ def send_otp_email(email, otp, round_name):
         
         response = resend.Emails.send(params)
         
-        print(f"\n✅ OTP Email successfully sent to: {email}")
-        print(f"📧 Round: {round_name}")
-        print(f"📬 Resend Email ID: {response.get('id', 'N/A')}\n")
+        print(f"\nOTP Email successfully sent to: {email}")
+        print(f"Round: {round_name}")
+        print(f"Resend Email ID: {response.get('id', 'N/A')}\n")
         return True
         
     except Exception as e:
-        print(f"\n❌ Failed to send OTP email to {email}")
+        print(f"\nFailed to send OTP email to {email}")
         print(f"Error type: {type(e).__name__}")
         print(f"Error: {str(e)}\n")
         import traceback
@@ -123,17 +123,17 @@ def send_offer_letter_email(email, name, role):
     """
     Send offer letter via Resend API when candidate completes all rounds.
     """
-    print(f"\n🔄 STARTING offer letter send task for {email}")
+    print(f"\nSTARTING offer letter send task for {email}")
     
     if not RESEND_API_KEY:
-        print("❌ ERROR: RESEND_API_KEY not configured in environment variables")
+        print("ERROR: RESEND_API_KEY not configured in environment variables")
         return False
     
     try:
         import resend
         resend.api_key = RESEND_API_KEY
         
-        print("📝 Building offer letter content...")
+        print("Building offer letter content...")
         
         # HTML email body
         html_content = f"""
@@ -155,7 +155,7 @@ def send_offer_letter_email(email, name, role):
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1 style="margin: 0; font-size: 36px;">🎉 CONGRATULATIONS! 🎉</h1>
+                        <h1 style="margin: 0; font-size: 36px;">CONGRATULATIONS!</h1>
                         <p style="margin: 10px 0 0 0; font-size: 18px;">You've Successfully Completed All Rounds!</p>
                     </div>
                     <div class="content">
@@ -167,16 +167,16 @@ def send_offer_letter_email(email, name, role):
                             <p class="role-title">📋 Position: {role}</p>
                             
                             <div class="details">
-                                <p><strong>🎯 Your Journey:</strong></p>
+                                <p><strong>Your Journey:</strong></p>
                                 <ul style="line-height: 2;">
-                                    <li>✅ Resume Screening - <strong>Passed</strong></li>
-                                    <li>✅ Aptitude Round - <strong>Passed</strong></li>
-                                    <li>✅ DSA Round - <strong>Passed</strong></li>
-                                    <li>✅ HR Interview - <strong>Passed</strong></li>
+                                    <li>Resume Screening - <strong>Passed</strong></li>
+                                    <li>Aptitude Round - <strong>Passed</strong></li>
+                                    <li>DSA Round - <strong>Passed</strong></li>
+                                    <li>HR Interview - <strong>Passed</strong></li>
                                 </ul>
                             </div>
                             
-                            <p><strong>🎊 Welcome to the Team!</strong></p>
+                            <p><strong>Welcome to the Team!</strong></p>
                             
                             <p>We believe your skills, knowledge, and attitude make you an excellent fit for our organization. We're excited to have you join our team and contribute to our mission.</p>
                             
@@ -203,7 +203,7 @@ def send_offer_letter_email(email, name, role):
         </html>
         """
         
-        print("📤 Sending via Resend API...")
+        print("Sending via Resend API...")
         
         # Use Resend's test sender (no verification needed)
         sender_email = "onboarding@resend.dev"
@@ -211,20 +211,20 @@ def send_offer_letter_email(email, name, role):
         params = {
             "from": f"AI Hiring Manager <{sender_email}>",
             "to": [email],
-            "subject": "🎉 Congratulations! Offer Letter from AI Hiring Manager",
+            "subject": "Congratulations! Offer Letter from AI Hiring Manager",
             "html": html_content,
         }
         
         response = resend.Emails.send(params)
         
-        print(f"\n🎉 Offer Letter Email successfully sent to: {email}")
-        print(f"👤 Candidate: {name}")
-        print(f"💼 Role: {role}")
-        print(f"📬 Resend Email ID: {response.get('id', 'N/A')}\n")
+        print(f"\nOffer Letter Email successfully sent to: {email}")
+        print(f"Candidate: {name}")
+        print(f"Role: {role}")
+        print(f"Resend Email ID: {response.get('id', 'N/A')}\n")
         return True
         
     except Exception as e:
-        print(f"\n❌ Failed to send Offer Letter to {email}")
+        print(f"\nFailed to send Offer Letter to {email}")
         print(f"Error: {str(e)}\n")
         return False
 

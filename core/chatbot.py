@@ -27,9 +27,9 @@ def get_agent():
         # Ensure data directory exists
         try:
             DATA_DIR.mkdir(parents=True, exist_ok=True)
-            print(f"✓ Data directory: {DATA_DIR}")
+            print(f"[INFO] Data directory: {DATA_DIR}")
         except Exception as e:
-            print(f"⚠ Could not create data directory: {e}")
+            print(f"[WARN] Could not create data directory: {e}")
         
         # Initialize vector database and knowledge base (optional)
         try:
@@ -42,9 +42,9 @@ def get_agent():
             _knowledge_base = Knowledge(
                 vector_db=vector_db,
             )
-            print("✓ Knowledge base initialized")
+            print("[INFO] Knowledge base initialized")
         except Exception as e:
-            print(f"⚠ Could not initialize knowledge base: {e}")
+            print(f"[WARN] Could not initialize knowledge base: {e}")
             print("  Agent will work without knowledge base")
             _knowledge_base = None
         
@@ -63,9 +63,9 @@ def get_agent():
             agent_config["knowledge"] = _knowledge_base
             # Note: Not using search_knowledge=True to avoid function calling errors
             # The agent will still reference the knowledge base through context
-            print("✓ Agent initialized with knowledge base")
+            print("[INFO] Agent initialized with knowledge base")
         else:
-            print("✓ Agent initialized without knowledge base")
+            print("[INFO] Agent initialized without knowledge base")
         
         _agent = Agent(**agent_config)
 
@@ -81,7 +81,7 @@ def load_documents():
     # Check if knowledge base is available
     kb = get_knowledge_base()
     if kb is None:
-        print("⚠ Knowledge base not available, skipping document loading")
+        print("[WARN] Knowledge base not available, skipping document loading")
         return
     
     pdf_files = list(DOCUMENTS_DIR.glob("*.pdf"))
@@ -94,9 +94,9 @@ def load_documents():
         try:
             print(f"Loading {pdf_file.name}...")
             kb.add_content(path=str(pdf_file))
-            print(f"✓ Loaded {pdf_file.name}")
+            print(f"[INFO] Loaded {pdf_file.name}")
         except Exception as e:
-            print(f"✗ Error loading {pdf_file.name}: {e}")
+            print(f"[ERROR] Error loading {pdf_file.name}: {e}")
 
 def get_response(message: str) -> str:
     """

@@ -1,14 +1,14 @@
-# 🚀 Quick Deployment Checklist
+# Quick Deployment Checklist
 
 Use this checklist while deploying. See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
 
-## ✅ Pre-deployment
+## Pre-deployment
 - [x] Code updated with environment variables
 - [x] All files committed to GitHub
 - [ ] `.env` configured locally (if testing)
 - [ ] API keys ready (GROQ_API_KEY)
 
-## 🔧 Backend (Render)
+## Backend (Render)
 - [ ] Create Render account
 - [ ] Create new Web Service
 - [ ] Connect GitHub repository
@@ -21,7 +21,7 @@ Use this checklist while deploying. See [DEPLOYMENT.md](DEPLOYMENT.md) for detai
 - [ ] Copy backend URL: `________________`
 - [ ] Test health endpoint: /health
 
-## 🎨 Frontend (Vercel)
+## Frontend (Vercel)
 - [ ] Create Vercel account
 - [ ] Create new Project
 - [ ] Import GitHub repository
@@ -32,19 +32,19 @@ Use this checklist while deploying. See [DEPLOYMENT.md](DEPLOYMENT.md) for detai
 - [ ] Deploy and wait for completion
 - [ ] Copy frontend URL: `________________`
 
-## 🔄 Post-deployment
+## Post-deployment
 - [ ] Update Render ALLOWED_ORIGINS with Vercel URL
 - [ ] Wait for Render to redeploy
 - [ ] Test full application flow
 - [ ] Verify WebSocket interview works
 
-## ✨ Testing
+## Testing
 - [ ] Home page loads
 - [ ] User registration
 - [ ] Application form
 - [ ] Aptitude quiz
 - [ ] DSA quiz
-- [ ] **HR Interview (WebSocket)** ⚠️ Critical
+- [ ] **HR Interview (WebSocket)** Critical
 - [ ] Chatbot
 - [ ] Profile page
 
