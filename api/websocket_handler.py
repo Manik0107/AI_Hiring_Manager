@@ -16,6 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.interview_agent import InterviewAgent
 from core.audio_services import AudioProcessor
+from core.database import SessionLocal
+from core.models import Candidate, User
+from core.auth import verify_token
 
 
 class InterviewSession:
@@ -154,6 +157,19 @@ class WebSocketManager:
             job_role = init_message.get("job_role", "Software Engineer")
             
             session = InterviewSession(session_id, job_role)
+            
+            # Try to get user ID from token if provided
+            token = init_message.get("token")
+            if token:
+                try:
+                    payload = verify_token(token)
+                    session.user_id = payload.get("user_id")
+                except Exception as e:
+                    print(f"Could not decode token: {e}")
+                    session.user_id = None
+            else:
+                session.user_id = None
+            
             self.active_sessions[session_id] = session
             
             # Start interview
@@ -243,6 +259,72 @@ class WebSocketManager:
                     if session.agent.state.stage.value == "conclusion":
                         session.is_active = False
                         summary = session.get_interview_summary()
+                        
+                        # Save Round 3 score to database
+                        try:
+                            # Get token from init message (we'll need to store it)
+                            if hasattr(session, 'user_id') and session.user_id:
+                                db = SessionLocal()
+                                try:
+                                    candidate = db.query(Candidate).filter(
+                                        Candidate.user_id == session.user_id
+                                    ).first()
+                                    
+                                    if candidate:
+                                        # Calculate overall score from the summary
+                                        scores = summary.get('scores', {})
+                                        print(f"DEBUG: Full interview summary: {json.dumps(summary, indent=2)}")
+                                        print(f"DEBUG: Scores object: {scores}")
+                                        
+                                        # Try different possible score keys
+                                        overall_score = 0
+                                        
+                                        # Method 1: Direct overall/overall_score key
+                                        if 'overall' in scores:
+                                            overall_score = scores['overall']
+                                        elif 'overall_score' in scores:
+                                            overall_score = scores['overall_score']
+                                        # Method 2: Calculate from component scores
+                                        elif isinstance(scores, dict) and len(scores) > 0:
+                                            # Extract numeric scores
+                                            numeric_scores = []
+                                            for key, value in scores.items():
+                                                if isinstance(value, (int, float)) and value >= 0:
+                                                    numeric_scores.append(value)
+                                            
+                                            if numeric_scores:
+                                                overall_score = sum(numeric_scores) / len(numeric_scores)
+                                                print(f"DEBUG: Calculated from components: {numeric_scores} → {overall_score}")
+                                        
+                                        # Ensure score is in valid range
+                                        overall_score = max(0, min(100, overall_score))
+                                        
+                                        print(f"DEBUG: Final overall score to save: {overall_score}")
+                                        
+                                        # Save Round 3 score
+                                        candidate.round_3_score = int(overall_score)
+                                        candidate.round_3_analysis = json.dumps(scores)
+                                        candidate.current_round = 3
+                                        candidate.overall_status = "completed"
+                                        
+                                        db.commit()
+                                        print(f"✅ Saved Round 3 score: {overall_score}% for candidate {candidate.id}")
+                                except Exception as db_error:
+                                    print(f"❌ Database error saving score: {db_error}")
+                                    import traceback
+                                    traceback.print_exc()
+                                    db.rollback()
+                                finally:
+                                    db.close()
+                        except Exception as e:
+                            print(f"❌ Error saving interview score: {e}")
+                            import traceback
+                            traceback.print_exc()
+                        
+                        # Wait for final audio to finish playing before sending complete message
+                        # This prevents the thank you message from being cut off
+                        await asyncio.sleep(2)
+                        
                         await websocket.send_json({
                             "type": "interview_complete",
                             "summary": summary

@@ -11,6 +11,8 @@ pydantic
 pydantic-settings
 groq
 edge-tts
-fastapi
-uvicorn
 websockets
+python-multipart
+sqlalchemy
+bcrypt
+pyjwt

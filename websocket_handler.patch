@@ -1,0 +1,65 @@
+--- a/api/websocket_handler.py
++++ b/api/websocket_handler.py
+@@ -271,19 +271,55 @@ class WebSocketManager:
+                                     ).first()
+                                     
+                                     if candidate:
+-                                        # Calculate overall score from the summary
++                                        # DEBUG: Calculate overall score from the summary
+                                         scores = summary.get('scores', {})
+-                                        overall_score = scores.get('overall', 0)
++                                        print(f"DEBUG: Full interview summary: {json.dumps(summary, indent=2)}")
++                                        print(f"DEBUG: Scores object: {scores}")
++                                        
++                                        # Try different possible score keys
++                                        overall_score = 0
++                                        
++                                        # Method 1: Direct overall/overall_score key
++                                        if 'overall' in scores:
++                                            overall_score = scores['overall']
++                                        elif 'overall_score' in scores:
++                                            overall_score = scores['overall_score']
++                                        # Method 2: Calculate from component scores
++                                        elif isinstance(scores, dict) and len(scores) > 0:
++                                            # Extract numeric scores
++                                            numeric_scores = []
++                                            for key, value in scores.items():
++                                                if isinstance(value, (int, float)) and value >= 0:
++                                                    numeric_scores.append(value)
++                                            
++                                            if numeric_scores:
++                                                overall_score = sum(numeric_scores) / len(numeric_scores)
++                                                print(f"DEBUG: Calculated from components: {numeric_scores} → {overall_score}")
++                                        
++                                        # Ensure score is in valid range
++                                        overall_score = max(0, min(100, overall_score))
++                                        
++                                        print(f"DEBUG: Final overall score to save: {overall_score}")
+                                         
+                                         # Save Round 3 score
+                                         candidate.round_3_score = int(overall_score)
+                                         candidate.round_3_analysis = json.dumps(scores)
+                                         candidate.current_round = 3
+                                         candidate.overall_status = "completed"
+                                         
+                                         db.commit()
+-                                        print(f"Saved Round 3 score: {overall_score} for candidate {candidate.id}")
++                                        print(f"✅ Saved Round 3 score: {overall_score}% for candidate {candidate.id}")
+                                 except Exception as db_error:
+-                                    print(f"Database error saving score: {db_error}")
++                                    print(f"❌ Database error saving score: {db_error}")
++                                    import traceback
++                                    traceback.print_exc()
+                                     db.rollback()
+                                 finally:
+                                     db.close()
+                         except Exception as e:
+                             print(f"Error saving interview score: {e}")
++                            import traceback
++                            traceback.print_exc()
++                        
++                        # Wait for final audio to finish playing before sending complete message
++                        # This prevents the thank you message from being cut off
++                        await asyncio.sleep(2)
+                         
+                         await websocket.send_json({

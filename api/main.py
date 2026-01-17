@@ -25,6 +25,12 @@ from core.chatbot import get_response, load_documents
 from api.formatter import format_response
 from api.interview_routes import router as interview_router
 from api.candidate_routes import router as candidate_router
+from api.auth_routes import router as auth_router
+from api.dashboard_routes import router as dashboard_router
+from api.quiz_routes import router as quiz_router
+from api.results_routes import router as results_router
+from api.analysis_routes import router as analysis_router
+from api.reattempt_routes import router as reattempt_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -36,7 +42,7 @@ app = FastAPI(
 )
 
 # Add CORS middleware to allow frontend connections
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000").split(",")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,http://localhost:8080,http://127.0.0.1:8080").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +53,12 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth_router)
+app.include_router(dashboard_router)
+app.include_router(quiz_router)
+app.include_router(results_router)
+app.include_router(analysis_router)
+app.include_router(reattempt_router)
 app.include_router(interview_router)
 app.include_router(candidate_router)
 
@@ -82,11 +94,19 @@ class HealthResponse(BaseModel):
 # Startup event to load documents
 @app.on_event("startup")
 async def startup_event():
-    """Load documents into knowledge base on startup"""
+    """Load documents into knowledge base and initialize database on startup"""
     print("Starting AI Hiring Manager API...")
+    
+    # Initialize database
+    from core.database import init_db
+    init_db()
+    print("Database initialized")
+    
+    # Load documents
     print("Loading documents into knowledge base...")
     load_documents()
     print("API ready!")
+
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
