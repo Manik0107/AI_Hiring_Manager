@@ -180,20 +180,7 @@ const styles = {
     fontSize: "13px",
     maxWidth: "85%",
   },
-  fab: {
-    position: "fixed",
-    bottom: "30px",
-    right: "30px",
-    background: "#00aaf3ff",
-    width: "60px",
-    height: "60px",
-    borderRadius: "50%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    cursor: "pointer",
-    zIndex: 999,
-  },
+
 
   userMessage: {
     alignSelf: "flex-end",
