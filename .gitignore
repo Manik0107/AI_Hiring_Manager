@@ -21,7 +21,7 @@ env/
 .env.local
 
 # Ignore vector database files (auto-generated)
-data/
+/data/
 collection/
 meta.json
 
