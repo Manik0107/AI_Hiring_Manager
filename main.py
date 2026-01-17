@@ -8,6 +8,7 @@ For production: See deployment guides in docs/DEPLOYMENT.md
 import uvicorn
 import os
 from dotenv import load_dotenv
+from api.main import app
 
 # Load environment variables
 load_dotenv()
