@@ -18,4 +18,11 @@ export const endpoints = {
     completeRound: `${API_BASE_URL}/candidates/complete-round`,
     chat: `${API_BASE_URL}/chat`,
     interviewWs: `${WS_BASE_URL}/interview/ws`,
+    quiz: {
+        status: `${API_BASE_URL}/quiz/status`,
+        submit: `${API_BASE_URL}/quiz/submit`
+    },
+    admin: {
+        grantReattempt: (id: number) => `${API_BASE_URL}/admin/candidate/${id}/grant-reattempt`,
+    }
 };

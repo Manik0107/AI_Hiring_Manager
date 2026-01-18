@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { endpoints } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +76,9 @@ export default function InterviewSetup() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://localhost:8000/auth/me", {
+        if (!token) return;
+
+        const response = await fetch(endpoints.auth.me, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

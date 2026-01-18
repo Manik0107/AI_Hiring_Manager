@@ -1,4 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -116,7 +117,7 @@ export default function InterviewResults() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/interview/${id}/results`, {
+      const response = await fetch(`${API_BASE_URL}/interview/${id}/results`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -147,7 +148,7 @@ export default function InterviewResults() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:8000/admin/candidate/${id}/attempts`,
+        `${API_BASE_URL}/admin/candidate/${id}/attempts`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -168,7 +169,7 @@ export default function InterviewResults() {
     setAnalysisLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8000/interview/${id}/analysis`, {
+      const response = await fetch(`${API_BASE_URL}/interview/${id}/analysis`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

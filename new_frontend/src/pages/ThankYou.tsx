@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { endpoints } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Home, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,7 +19,7 @@ export default function ThankYou() {
                     return;
                 }
 
-                const response = await fetch("http://localhost:8000/auth/me", {
+                const response = await fetch(endpoints.auth.me, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

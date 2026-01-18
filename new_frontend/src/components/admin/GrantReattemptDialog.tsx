@@ -10,6 +10,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { endpoints } from "@/lib/api";
 import { RefreshCcw } from "lucide-react";
 
 interface GrantReattemptDialogProps {
@@ -33,7 +34,7 @@ export function GrantReattemptDialog({
         try {
             const token = localStorage.getItem("token");
             const response = await fetch(
-                `http://localhost:8000/admin/candidate/${candidateId}/grant-reattempt`,
+                endpoints.admin.grantReattempt(candidateId),
                 {
                     method: "POST",
                     headers: {

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { endpoints } from "@/lib/api";
 import { Sparkles, User, LayoutDashboard, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,7 +20,7 @@ function HeaderCandidateLink() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const response = await fetch("http://localhost:8000/auth/me", {
+        const response = await fetch(endpoints.auth.me, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (response.ok) {
