@@ -14,6 +14,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Configure logging
+from api.logger import logger
+logger.info("Initializing API application")
+
 # Configure logging to suppress agno library warnings
 logging.getLogger("agno").setLevel(logging.ERROR)
 logging.getLogger("qdrant_client").setLevel(logging.ERROR)
@@ -42,7 +46,10 @@ app = FastAPI(
 )
 
 # Add CORS middleware to allow frontend connections
+# Add CORS middleware to allow frontend connections
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,http://localhost:8080,http://127.0.0.1:8080,https://ai-hiring-manager-six.vercel.app").split(",")
+# Add any other origins needed for local dev
+allowed_origins.extend(["*", "null"])  # Be permissive for debugging
 
 app.add_middleware(
     CORSMiddleware,
@@ -95,17 +102,17 @@ class HealthResponse(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Load documents into knowledge base and initialize database on startup"""
-    print("Starting AI Hiring Manager API...")
+    logger.info("Starting AI Hiring Manager API...")
     
     # Initialize database
     from core.database import init_db
     init_db()
-    print("Database initialized")
+    logger.info("Database initialized")
     
     # Load documents
-    print("Loading documents into knowledge base...")
+    logger.info("Loading documents into knowledge base...")
     load_documents()
-    print("API ready!")
+    logger.info("API ready!")
 
 
 # Health check endpoint

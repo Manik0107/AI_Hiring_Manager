@@ -19,6 +19,7 @@ from core.audio_services import AudioProcessor
 from core.database import SessionLocal
 from core.models import Candidate, User
 from core.auth import verify_token
+from api.logger import logger
 
 
 class InterviewSession:
@@ -165,7 +166,7 @@ class WebSocketManager:
                     payload = verify_token(token)
                     session.user_id = payload.get("user_id")
                 except Exception as e:
-                    print(f"Could not decode token: {e}")
+                    logger.error(f"Could not decode token: {e}")
                     session.user_id = None
             else:
                 session.user_id = None
@@ -193,7 +194,7 @@ class WebSocketManager:
                 if os.path.exists(intro_audio_path):
                     os.unlink(intro_audio_path)
             except Exception as e:
-                print(f"Warning: Could not delete intro audio file: {e}")
+                logger.warning(f"Warning: Could not delete intro audio file: {e}")
                 # Don't crash on cleanup errors
             
             # Main interview loop
@@ -252,7 +253,7 @@ class WebSocketManager:
                         if os.path.exists(response_audio_path):
                             os.unlink(response_audio_path)
                     except Exception as e:
-                        print(f"Warning: Could not delete response audio file: {e}")
+                        logger.warning(f"Warning: Could not delete response audio file: {e}")
                         # Don't crash on cleanup errors
                     
                     # Check if interview is complete
@@ -273,8 +274,8 @@ class WebSocketManager:
                                     if candidate:
                                         # Calculate overall score from the summary
                                         scores = summary.get('scores', {})
-                                        print(f"DEBUG: Full interview summary: {json.dumps(summary, indent=2)}")
-                                        print(f"DEBUG: Scores object: {scores}")
+                                        logger.debug(f"DEBUG: Full interview summary: {json.dumps(summary, indent=2)}")
+                                        logger.debug(f"DEBUG: Scores object: {scores}")
                                         
                                         # Try different possible score keys
                                         overall_score = 0
@@ -299,7 +300,7 @@ class WebSocketManager:
                                         # Ensure score is in valid range
                                         overall_score = max(0, min(100, overall_score))
                                         
-                                        print(f"DEBUG: Final overall score to save: {overall_score}")
+                                        logger.debug(f"DEBUG: Final overall score to save: {overall_score}")
                                         
                                         # Save Round 3 score
                                         candidate.round_3_score = int(overall_score)
@@ -308,18 +309,18 @@ class WebSocketManager:
                                         candidate.overall_status = "completed"
                                         
                                         db.commit()
-                                        print(f"✅ Saved Round 3 score: {overall_score}% for candidate {candidate.id}")
+                                    logger.info(f"✅ Saved Round 3 score: {overall_score}% for candidate {candidate.id}")
                                 except Exception as db_error:
-                                    print(f"❌ Database error saving score: {db_error}")
+                                    logger.error(f"❌ Database error saving score: {db_error}")
                                     import traceback
-                                    traceback.print_exc()
+                                    logger.error(traceback.format_exc())
                                     db.rollback()
                                 finally:
                                     db.close()
                         except Exception as e:
-                            print(f"❌ Error saving interview score: {e}")
+                            logger.error(f"❌ Error saving interview score: {e}")
                             import traceback
-                            traceback.print_exc()
+                            logger.error(traceback.format_exc())
                         
                         # Wait for final audio to finish playing before sending complete message
                         # This prevents the thank you message from being cut off
@@ -332,12 +333,12 @@ class WebSocketManager:
                         break
         
         except WebSocketDisconnect:
-            print(f"WebSocket disconnected: {session_id}")
+            logger.info(f"WebSocket disconnected: {session_id}")
         
         except Exception as e:
-            print(f"Error in WebSocket handler: {e}")
+            logger.error(f"Error in WebSocket handler: {e}")
             import traceback
-            traceback.print_exc()
+            logger.error(traceback.format_exc())
             # Only send error if WebSocket is still open
             try:
                 if websocket.client_state.value == 1:  # CONNECTED state
@@ -346,7 +347,7 @@ class WebSocketManager:
                         "message": str(e)
                     })
             except:
-                print("Could not send error message, WebSocket already closed")
+                logger.error("Could not send error message, WebSocket already closed")
         
         finally:
             # Clean up session

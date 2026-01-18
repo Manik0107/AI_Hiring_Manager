@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { endpoints } from "@/lib/api";
+import { logger } from "@/lib/logger";
 
 type Message = {
     id: string;
@@ -61,7 +62,7 @@ export function useVoiceInterview({ onComplete, candidateName, jobRole }: UseVoi
             activeSourceRef.current = source;
             source.start(0);
         } catch (error) {
-            console.error("Error playing audio:", error);
+            logger.error("Error playing audio:", error);
             setIsAiSpeaking(false);
         }
     };
@@ -72,7 +73,7 @@ export function useVoiceInterview({ onComplete, candidateName, jobRole }: UseVoi
         const ws = new WebSocket(endpoints.interviewWs);
 
         ws.onopen = () => {
-            console.log("WebSocket connected");
+            logger.info("WebSocket connected");
             setIsConnected(true);
 
             // Get auth token
@@ -129,12 +130,12 @@ export function useVoiceInterview({ onComplete, candidateName, jobRole }: UseVoi
         };
 
         ws.onclose = () => {
-            console.log("WebSocket disconnected");
+            logger.info("WebSocket disconnected");
             setIsConnected(false);
         };
 
         ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
+            logger.error("WebSocket error:", error);
         };
 
         wsRef.current = ws;
@@ -176,7 +177,7 @@ export function useVoiceInterview({ onComplete, candidateName, jobRole }: UseVoi
             mediaRecorder.start();
             setIsRecording(true);
         } catch (error) {
-            console.error("Error starting recording:", error);
+            logger.error("Error starting recording:", error);
         }
     };
 
